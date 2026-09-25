@@ -1,0 +1,12 @@
+{
+  "name": "alicia-fantasia-medieval",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ficha e party online para Alicia RPG",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17131d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Alicia | Ficha de Fantasia Medieval</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/app-icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="overrides.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Alicia - ficha de personagem">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span><strong>Alicia</strong><small>Ficha de fantasia medieval</small></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="save-state" id="saveState" aria-live="polite">Salvo neste dispositivo</span>
+        <button class="button button-quiet" id="installAppButton" type="button" hidden>Instalar app</button>
+        <button class="button button-primary" id="returnToTabletopButton" type="button" hidden>← Voltar à Mesa</button>
+        <button class="button button-quiet" id="partyButton" type="button">Party online</button>
+        <button class="button button-quiet" id="newSheetButton" type="button">Nova ficha</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sheet-rail" aria-label="Fichas de personagem">
+        <span class="sheet-rail-title">Fichas</span>
+        <div class="sheet-rail-list" id="sheetRailList"></div>
+        <button class="sheet-rail-add" id="addSheetButton" type="button" aria-label="Criar nova ficha" title="Criar nova ficha">+</button>
+      </aside>
+
+      <main id="top" class="sheet">
+      <section class="sheet-intro" aria-labelledby="sheet-title">
+        <div>
+          <p class="eyebrow">Alicia · Fantasia Medieval</p>
+          <h1 id="sheet-title">Ficha de personagem</h1>
+          <p>Organize o que importa para jogar: personagem, perícias, proteção e equipamentos.</p>
+        </div>
+        <div class="file-actions">
+          <button class="button button-quiet" id="inventoryButton" type="button">Inventário</button>
+          <button class="button button-quiet" id="trailAdminButton" type="button">Área do Mestre</button>
+          <button class="button button-quiet" id="exportButton" type="button">Exportar</button>
+          <button class="button button-quiet delete-sheet-button" id="deleteSheetButton" type="button">Excluir ficha</button>
+          <label class="button button-quiet file-label">Importar ficha<input id="importInput" type="file" accept="application/json" /></label>
+        </div>
+      </section>
+
+      <section class="character-hero" aria-label="Identidade do personagem">
+        <div class="portrait-card">
+          <div class="portrait" id="portraitPreview" aria-label="Foto do personagem"></div>
+          <div class="portrait-actions">
+            <label class="button button-light photo-label">Adicionar foto<input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
+            <button class="text-button" id="removePhotoButton" type="button">Remover</button>
+          </div>
+          <small>A foto fica salva somente nesta ficha.</small>
+        </div>
+        <div class="identity-content">
+          <div class="identity-heading"><div><p class="eyebrow">Personagem</p><h2 id="characterDisplayName">Sem nome</h2></div><span class="level-badge">Nível <output id="identityLevel">1</output></span></div>
+          <div class="identity-grid">
+            <label>Nome<input id="characterName" maxlength="60" placeholder="Ex.: Elara Valenne" /></label>
+            <label>Trilha<button id="pathSelect" class="trail-selector" type="button" aria-haspopup="dialog"></button></label>
+            <label>Tipo de ficha<select id="characterType"><option value="pc">Personagem jogador</option><option value="npc">NPC / monstro</option></select></label>
+            <label id="npcTierField" hidden>Categoria do NPC<select id="npcTier"><option value="Padrão">Padrão</option><option value="Chefe">Chefe</option></select></label>
+            <label id="npcDiceField" hidden>Bônus de dados do NPC<input id="npcDiceBonus" type="number" min="0" max="20" inputmode="numeric" /></label>
+            <label>Nível<input id="levelInput" type="number" min="1" max="20" readonly aria-readonly="true" /></label>
+            <label>Ação de movimento (m)<input id="movementActionInput" type="number" min="0" max="100" inputmode="numeric" /></label>
+            <label>EXP atual<input id="xpInput" type="number" min="0" inputmode="numeric" /></label>
+            <label>Contos de Ouro (C$)<input id="goldInput" type="number" min="0" inputmode="numeric" /></label>
+          </div>
+          <div class="level-up-inline"><span class="tag" id="nextLevelHint"></span><button class="level-up-button" id="levelUpButton" type="button">Subir de nível</button></div>
+          <div class="path-note" id="pathNote"></div>
+          <section class="rimuru-cosmetic-panel" id="rimuruCosmeticPanel" hidden>
+            <div>
+              <span class="rimuru-admin-seal">Administrador</span>
+              <strong>Pacote visual do Rimuru</strong>
+              <small id="rimuruCurrentForm">Forma ativa: slime</small>
+            </div>
+            <button class="button button-quiet" id="openRimuruCosmeticsButton" type="button">Personalizar token</button>
+          </section>
+        </div>
+      </section>
+
+      <section class="status-section" aria-labelledby="status-title">
+        <div class="section-heading"><div><p class="eyebrow">Recursos</p><h2 id="status-title">Pontos de Estado</h2></div><button class="text-button" id="restButton" type="button">Aplicar descanso seguro</button></div>
+        <div class="resource-grid" id="resources"></div>
+      </section>
+
+      <section class="section-block attributes-section" aria-labelledby="attributes-title">
+        <div class="section-heading"><div><p class="eyebrow">Base da ficha</p><h2 id="attributes-title">Atributos</h2><p class="hint">Na criação, todos começam em −2. Distribua 11 pontos e deixe somente um atributo chegar a +3.</p></div><div class="validation" id="creationValidation" aria-live="polite"></div></div>
+        <div class="attribute-grid" id="attributes"></div>
+      </section>
+
+      <div class="sheet-columns">
+        <section class="section-block skills-section" aria-labelledby="skills-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">Conhecimentos</p><h2 id="skills-title">Perícias adquiridas</h2><p class="hint">Só aparecem perícias que o personagem possui ou que a trilha concede.</p></div>
+            <div class="skills-actions"><span class="tag" id="skillPoints">PP 0/0</span><button class="button button-primary" id="acquireSkillButton" type="button">+ Adquirir perícia</button></div>
+          </div>
+          <div class="skill-learning-guide"><strong>Como funcionam as perícias</strong><span>Vagas vêm do atributo; PP aumenta o valor das perícias já aprendidas.</span></div>
+          <div class="skill-slot-grid" id="skillSlots" aria-label="Vagas de perícia por atributo"></div>
+          <div class="skills-list" id="skills"></div>
+        </section>
+
+        <aside class="section-block protection-section" aria-labelledby="protection-title">
+          <div class="section-heading"><div><p class="eyebrow">Sobrevivência</p><h2 id="protection-title">Defesa e resistências</h2></div></div>
+          <div class="defense-summary">
+            <div><span>Defesa atual</span><strong id="totalDefense">0</strong></div>
+            <div><span>Dificuldade de Acerto</span><strong id="hitDifficulty">10</strong></div>
+          </div>
+          <label class="manual-field">Defesa manual<input id="manualDefense" type="number" /></label>
+          <div class="damage-application">
+            <div><p class="eyebrow">Receber dano</p><h3>Aplicar dano ao personagem</h3><p class="hint">Informe o dano bruto e o tipo. A ficha usa automaticamente a Defesa e a resistência correspondente.</p></div>
+            <div class="protection-form">
+              <label>Dano bruto<input id="damageInput" type="number" min="0" inputmode="numeric" /></label>
+              <label>Penetração<input id="damagePenetration" type="number" min="0" inputmode="numeric" /></label>
+              <label>Tipo de dano<select id="damageType"><option value="physical">Físico</option><option value="supernatural">Sobrenatural</option><option value="effect">Efeito / condição</option><option value="sanity">Sanidade</option></select></label>
+            </div>
+            <div class="protection-result" id="damageResult" aria-live="polite"></div>
+            <button class="button button-primary apply-damage-button" id="applyDamageButton" type="button">Aplicar dano</button>
+          </div>
+          <div class="resistance-list" id="resistanceDetails"></div>
+        </aside>
+      </div>
+
+      <section class="section-block skills-section combat-skills-section" aria-labelledby="combatSkillsTitle">
+        <div class="section-heading"><div><p class="eyebrow">Combate</p><h2 id="combatSkillsTitle">Perícias de combate</h2><p class="hint">Têm vagas próprias por atributo e compartilham apenas os PP com as perícias comuns. Perícias ofensivas dão +3% de dano por ponto; Equipamentos de Defesa dá +1 Defesa a cada 2 pontos.</p></div><div class="skills-actions"><span class="tag" id="combatSkillPoints">PP 0/0</span><button class="button button-primary" id="acquireCombatSkillButton" type="button">+ Adquirir perícia de combate</button></div></div>
+        <div class="skill-slot-grid" id="combatSkillSlots"></div>
+        <div class="skills-list" id="combatSkills"></div>
+      </section>
+
+      <section class="section-block actions-section" aria-labelledby="actionsTitle">
+        <div class="section-heading"><div><p class="eyebrow">Assinatura de combate</p><h2 id="actionsTitle">Ações e poderes</h2><p class="hint">Crie ataques e magias com custo, dano, penetração e uma animação própria para usar na Mesa virtual.</p></div><button class="button button-primary" id="addActionButton" type="button">+ Nova ação</button></div>
+        <div class="character-actions-list" id="characterActionsList"></div>
+      </section>
+
+      </main>
+    </div>
+
+    <section id="partyScreen" class="party-screen" hidden aria-labelledby="partyScreenTitle">
+      <header class="party-screen-header">
+        <a class="brand" href="#top" id="partyScreenBrand" aria-label="Voltar para as fichas">
+          <span class="brand-mark" aria-hidden="true">A</span>
+          <span><strong>Alicia</strong><small>Mesa online</small></span>
+        </a>
+        <div class="party-screen-actions">
+          <button class="button button-quiet" id="backFromPartyButton" type="button">Minhas fichas</button>
+          <button class="button button-quiet" id="partyScreenDisconnectButton" type="button">Sair da party</button>
+        </div>
+      </header>
+
+      <main class="party-board">
+        <section class="party-stage" aria-live="polite">
+          <p class="eyebrow">Mesa em andamento</p>
+          <h1 id="partyScreenTitle">Party</h1>
+          <p class="party-screen-subtitle" id="partyScreenSubtitle"></p>
+          <div class="party-screen-host-tools" id="partyScreenHostTools" hidden>
+            <label>Link de convite<input id="partyScreenInviteLink" readonly /></label>
+            <button class="button button-primary" id="partyScreenCopyInviteButton" type="button">Copiar convite</button>
+          </div>
+          <div class="party-lobby-hero">
+            <span class="party-stage-mark" aria-hidden="true">✦</span>
+            <h2 id="partyStageTitle">Aguardando aventureiros</h2>
+            <p id="partyStageSummary">Envie o convite. As fichas dos jogadores aparecerão na lateral quando entrarem.</p>
+            <button class="button button-primary party-open-tabletop" id="openTabletopButton" type="button">Abrir mesa virtual</button>
+          </div>
+          <button class="button button-primary" id="partyScreenEditSheetButton" type="button" hidden>Editar minha ficha</button>
+        </section>
+
+        <aside class="party-ready-sheets" aria-labelledby="partyReadySheetsTitle">
+          <section class="party-private-notes-card" id="partyPrivateNotesCard" hidden>
+            <div><p class="eyebrow">Somente você</p><h2>Anotações da sessão</h2><p id="partyNotesPreview">Registre pistas, nomes e planos sem compartilhar com a mesa.</p></div>
+            <button class="button button-primary" id="partyNotesOpenButton" type="button">Abrir anotações</button>
+          </section>
+          <div class="party-ready-heading"><div><p class="eyebrow">Prontas para jogar</p><h2 id="partyReadySheetsTitle">Fichas na mesa</h2></div><button class="text-button" id="partyScreenRefreshButton" type="button">Atualizar</button></div>
+          <div class="party-ready-list" id="partyScreenMemberList"></div>
+        </aside>
+      </main>
+    </section>
+
+    <section id="tabletopScreen" class="tabletop-screen" hidden aria-label="Mesa virtual da party">
+      <header class="tabletop-header">
+        <div class="tabletop-brand"><button class="button button-quiet tabletop-back" id="backFromTabletopButton" type="button">← Party</button><div><strong id="tabletopPartyTitle">Party</strong><small>Mesa virtual</small></div></div>
+        <div class="tabletop-roster-wrap"><span>Jogadores</span><div class="tabletop-roster" id="tabletopRoster"></div></div>
+        <div class="tabletop-actions"><button class="button button-quiet" id="tabletopCalculatorButton" type="button">Calculadora</button><button class="button button-quiet" id="tabletopNotesButton" type="button" hidden>Anotações</button><button class="button button-quiet" id="tabletopSheetButton" type="button" hidden>Minha ficha</button><button class="button button-quiet" id="tabletopRefreshButton" type="button">Atualizar</button><button class="button button-quiet" id="tabletopDisconnectButton" type="button">Sair</button></div>
+      </header>
+
+      <main class="tabletop-main">
+        <section class="tabletop-map-area">
+          <details class="party-table-tools tabletop-host-tools" id="partyTableHostTools" hidden>
+            <summary><span>Ferramentas do Mestre</span><small>Mapa, grade, tokens e combate</small></summary>
+            <div class="tabletop-host-tools-content">
+              <label class="party-combat-mode">Modo<select id="partyCombatMode"><option value="free">Mesa livre</option><option value="combat">Combate tático</option></select></label>
+              <label class="map-upload-button button button-quiet">Enviar mapa<input id="partyMapUpload" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+              <button class="button button-quiet" id="clearPartyMapButton" type="button">Remover mapa</button>
+              <label class="party-grid-toggle"><input id="partyGridToggle" type="checkbox" checked /> Mostrar grade</label>
+              <label class="party-grid-size">Colunas<input id="partyGridColumns" type="number" min="2" max="100" value="20" inputmode="numeric" /></label>
+              <label class="party-grid-size">Linhas<input id="partyGridRows" type="number" min="2" max="100" value="20" inputmode="numeric" /></label>
+              <label class="party-map-zoom">Zoom<input id="partyMapZoom" type="range" min="50" max="250" value="100" /><output id="partyMapZoomValue">100%</output></label>
+              <button class="button button-quiet" id="fitPartyMapButton" type="button">Ajustar mapa</button>
+              <button class="button button-primary" id="addMonsterTokenButton" type="button">+ Token de monstro</button>
+              <button class="button button-primary" id="startCombatButton" type="button">Iniciar combate</button>
+              <button class="button button-primary" id="nextCombatTurnButton" type="button" hidden>Próximo turno</button>
+              <button class="button button-quiet" id="endCombatButton" type="button" hidden>Encerrar combate</button>
+            </div>
+          </details>
+          <div class="party-vtt tabletop-vtt" aria-labelledby="partyMapTitle">
+            <div class="party-vtt-heading"><div><h1 id="partyMapTitle">Mapa da mesa</h1><p id="partyStageDescription">Mova os tokens para conduzir o combate.</p></div><div class="tabletop-combat-status" id="partyCombatStatus" hidden aria-live="polite"></div><span id="partyMapSyncStatus" class="party-map-sync-status">Sincronizado</span></div>
+            <div class="combat-initiative-order" id="partyInitiativeOrder" hidden aria-label="Ordem de iniciativa"></div>
+            <div class="tabletop-view-tools" aria-label="Ajustar a visão deste dispositivo"><span>Minha visão</span><button class="icon-button" id="mapViewZoomOut" type="button" aria-label="Afastar mapa">−</button><output id="mapViewZoomValue">100%</output><button class="icon-button" id="mapViewZoomIn" type="button" aria-label="Aproximar mapa">+</button><button class="text-button" id="resetMapViewButton" type="button">Centralizar</button></div>
+            <div class="tabletop-map-viewport" id="tabletopMapViewport">
+              <div id="partyMapSurface" class="party-map-surface" role="application" aria-label="Mapa tático da party">
+                <div class="party-map-grid" aria-hidden="true"></div>
+                <div id="partyMoveTargets" class="party-move-targets" aria-label="Destinos de movimento" hidden></div>
+                <div id="partyMapEmpty" class="party-map-empty"><span class="party-stage-mark" aria-hidden="true">✦</span><strong>Nenhum mapa na mesa</strong><small id="partyMapEmptyHint">O Mestre pode enviar uma imagem para começar.</small></div>
+                <div id="partyTokenLayer" class="party-token-layer" aria-live="polite"></div>
+              </div>
+            </div>
+            <p id="partyMapFeedback" class="party-map-feedback" aria-live="polite"></p>
+          </div>
+        </section>
+        <aside class="tabletop-inspector" id="tabletopInspector" hidden aria-live="polite"></aside>
+        <section class="tabletop-action-dock" id="tabletopActionDock" hidden aria-live="polite"><div class="tabletop-action-dock-heading"><p>Ações do personagem</p><button id="tabletopActionDockToggle" type="button" aria-label="Recolher ações" aria-expanded="true">⌄</button></div><div id="tabletopActionList"></div><small id="tabletopActionHint">Escolha uma ação e depois clique em um alvo.</small></section>
+      </main>
+    </section>
+
+    <dialog id="tabletopCalculatorDialog" class="tabletop-calculator-dialog" aria-labelledby="tabletopCalculatorTitle">
+      <form id="tabletopCalculatorForm">
+        <div class="section-heading"><div><p class="eyebrow">Ferramenta da mesa</p><h2 id="tabletopCalculatorTitle">Calculadora</h2><p class="hint">Aceita contas e dados, como 2d6 + 5.</p></div><button class="button button-quiet" id="closeTabletopCalculator" type="button">Fechar</button></div>
+        <label class="tabletop-calculator-display">Expressão<input id="tabletopCalculatorInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Ex.: 2d6 + 5 × 2" /></label>
+        <output class="tabletop-calculator-result" id="tabletopCalculatorResult" aria-live="polite">0</output>
+        <p class="tabletop-calculator-detail" id="tabletopCalculatorDetail">Digite uma conta ou toque nos botões.</p>
+        <div class="tabletop-dice-shortcuts" aria-label="Dados rápidos"><button type="button" data-calc-roll="d20">d20</button><button type="button" data-calc-roll="d12">d12</button><button type="button" data-calc-roll="d10">d10</button><button type="button" data-calc-roll="d8">d8</button><button type="button" data-calc-roll="d6">d6</button><button type="button" data-calc-roll="d4">d4</button></div>
+        <div class="tabletop-calculator-keypad" aria-label="Teclado da calculadora">
+          <button type="button" data-calc-action="clear">C</button><button type="button" data-calc-action="backspace" aria-label="Apagar último caractere">⌫</button><button type="button" data-calc-value="(">(</button><button type="button" data-calc-value=")">)</button>
+          <button type="button" data-calc-value="7">7</button><button type="button" data-calc-value="8">8</button><button type="button" data-calc-value="9">9</button><button class="operator" type="button" data-calc-value="÷">÷</button>
+          <button type="button" data-calc-value="4">4</button><button type="button" data-calc-value="5">5</button><button type="button" data-calc-value="6">6</button><button class="operator" type="button" data-calc-value="×">×</button>
+          <button type="button" data-calc-value="1">1</button><button type="button" data-calc-value="2">2</button><button type="button" data-calc-value="3">3</button><button class="operator" type="button" data-calc-value="−">−</button>
+          <button type="button" data-calc-value="d">d</button><button type="button" data-calc-value="0">0</button><button type="button" data-calc-value=".">.</button><button class="operator" type="button" data-calc-value="+">+</button>
+        </div>
+        <button class="button button-primary tabletop-calculator-equals" type="submit">Calcular</button>
+        <div class="tabletop-calculator-history" id="tabletopCalculatorHistory" hidden><strong>Últimos resultados</strong><div></div></div>
+      </form>
+    </dialog>
+
+    <dialog id="partyNotesDialog" class="party-notes-dialog" aria-labelledby="partyNotesTitle">
+      <form id="partyNotesForm">
+        <div class="section-heading"><div><p class="eyebrow">Privado</p><h2 id="partyNotesTitle">Anotações da sessão</h2><p class="hint">Somente este jogador pode acessar o conteúdo. O Mestre e os outros jogadores não recebem estas anotações.</p></div><button class="button button-quiet" id="closePartyNotesButton" type="button">Fechar</button></div>
+        <label>Suas anotações<textarea id="partyNotesInput" maxlength="20000" rows="14" placeholder="Pistas, nomes importantes, suspeitas, planos…"></textarea></label>
+        <div class="party-notes-footer"><span id="partyNotesFeedback" aria-live="polite">Salvas automaticamente.</span><button class="button button-primary" type="submit">Salvar agora</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="tabletopSheetDialog" class="tabletop-sheet-dialog" aria-labelledby="tabletopSheetTitle">
+      <form method="dialog">
+        <div class="section-heading"><div><p class="eyebrow">Mesa virtual</p><h2 id="tabletopSheetTitle">Minha ficha</h2><p class="hint">Os valores são sincronizados automaticamente com o Mestre.</p></div><button class="button button-quiet" value="cancel" type="submit">Fechar</button></div>
+        <div id="tabletopSheetQuickView"></div>
+        <div class="dialog-actions"><button class="button button-quiet" id="openFullSheetFromTabletop" type="button">Abrir ficha completa</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="combatInitiativeDialog" class="combat-initiative-dialog" aria-labelledby="combatInitiativeTitle">
+      <form id="combatInitiativeForm">
+        <div class="section-heading"><div><p class="eyebrow">Mestre</p><h2 id="combatInitiativeTitle">Definir iniciativas</h2><p class="hint">Digite a iniciativa de cada token. O maior valor começa; empates mantêm a ordem desta lista.</p></div><button class="button button-quiet" id="closeCombatInitiativeDialog" type="button">Cancelar</button></div>
+        <div id="combatInitiativeList" class="combat-initiative-list"></div>
+        <p class="hint combat-initiative-feedback" id="combatInitiativeFeedback" aria-live="polite"></p>
+        <div class="dialog-actions"><button class="button button-primary" type="submit">Iniciar combate</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="actionDialog" class="action-dialog" aria-labelledby="actionDialogTitle">
+      <form id="actionForm">
+        <div class="section-heading"><div><p class="eyebrow">Ação personalizada</p><h2 id="actionDialogTitle">Nova ação visual</h2></div><button class="button button-quiet" id="closeActionDialog" type="button">Fechar</button></div>
+        <input id="actionId" type="hidden" />
+        <label>Nome da ação<input id="actionName" maxlength="60" placeholder="Ex.: Lâmina de fogo" required /></label>
+        <label>Descrição <small>(opcional)</small><input id="actionDescription" maxlength="110" placeholder="Ex.: Uma espada flamejante atravessa o alvo." /></label>
+        <div class="action-form-grid"><label>Tipo<select id="actionType"><option value="principal">Ação principal</option><option value="secundaria">Ação secundária</option><option value="movimento">Movimento</option></select></label><label>Perícia usada<select id="actionCombatSkill"></select></label><label>Tipo de dano<select id="actionDamageType"><option value="physical">Físico</option><option value="supernatural">Sobrenatural</option><option value="effect">Efeito</option><option value="sanity">Sanidade</option></select></label><label>Dano bruto<input id="actionDamage" type="number" min="0" value="0" /></label><label>Penetração<input id="actionPenetration" type="number" min="0" value="0" /></label><label id="actionResourceCostLabel">Custo de Energia<input id="actionEnergyCost" type="number" min="0" value="0" /></label><label class="action-target-mage"><input id="actionTargetMage" type="checkbox" /> Alvo identificado como mago</label></div>
+        <div class="action-form-grid"><label>Estilo<select id="actionStyle"><option value="projectile">Projétil</option><option value="slash">Corte</option><option value="burst">Explosão</option><option value="aura">Aura</option></select></label><label>Cor<input id="actionColor" type="color" value="#f6aa52" /></label><label>Duração<input id="actionDuration" type="range" min="300" max="2200" step="100" value="900" /><output id="actionDurationValue">0,9 s</output></label></div>
+        <label>Imagem ou GIF do efeito <small>(opcional, até 2 MB)</small><input id="actionEffectImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif" /></label>
+        <div class="action-visual-preview" id="actionVisualPreview"><span>✦</span><small>Prévia do efeito</small></div>
+        <div class="dialog-actions"><button class="button button-quiet" id="deleteActionButton" type="button" hidden>Excluir</button><button class="button button-primary" type="submit">Salvar ação</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="rimuruCosmeticDialog" class="rimuru-cosmetic-dialog" aria-labelledby="rimuruCosmeticTitle">
+      <form id="rimuruCosmeticForm">
+        <div class="section-heading"><div><p class="eyebrow">Exclusivo da trilha</p><h2 id="rimuruCosmeticTitle">Visual do Rimuru</h2><p class="hint">Configure as duas formas usadas no token. Sem imagem personalizada de slime, o VTT usa a imagem exclusiva do Rimuru; sem imagem humana, usa a foto da ficha.</p></div><button class="button button-quiet" id="closeRimuruCosmeticDialog" type="button">Fechar</button></div>
+        <div class="rimuru-form-previews">
+          <section><div class="rimuru-image-preview" id="rimuruSlimePreview"></div><strong>Forma slime</strong><label class="button button-quiet">Escolher imagem<input id="rimuruSlimeImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden /></label><button class="rimuru-remove-image" id="removeRimuruSlimeImage" type="button">Usar imagem exclusiva padrão</button></section>
+          <section><div class="rimuru-image-preview" id="rimuruHumanPreview"></div><strong>Forma humana</strong><label class="button button-quiet">Escolher imagem<input id="rimuruHumanImageInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden /></label><button class="rimuru-remove-image" id="removeRimuruHumanImage" type="button">Usar foto da ficha</button></section>
+        </div>
+        <label class="rimuru-default-form">Forma inicial<select id="rimuruActiveForm"><option value="slime">Slime</option><option value="human">Humana</option></select></label>
+        <p class="hint" id="rimuruCosmeticFeedback" aria-live="polite">Durante a sessão, use “Transformar” na barra de ações para alternar entre as duas imagens.</p>
+        <div class="dialog-actions"><button class="button button-primary" type="submit">Salvar visual</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="addTokenDialog" class="add-token-dialog" aria-labelledby="addTokenTitle">
+      <form id="addTokenForm">
+        <div class="section-heading"><div><p class="eyebrow">Mestre</p><h2 id="addTokenTitle">Novo token de monstro</h2></div><button class="button button-quiet" id="closeAddTokenDialog" type="button">Fechar</button></div>
+        <label>Nome do monstro<input id="monsterTokenName" maxlength="60" placeholder="Ex.: Goblin arqueiro" required /></label>
+        <label>Imagem do token <small>(opcional)</small><input id="monsterTokenImage" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+        <p class="hint">Sem imagem, o token mostrará a inicial do nome.</p>
+        <button class="button button-primary" type="submit">Colocar na mesa</button>
+      </form>
+    </dialog>
+
+    <dialog id="monsterSheetDialog" class="monster-sheet-dialog" aria-labelledby="monsterSheetTitle">
+      <form id="monsterSheetForm">
+        <div class="section-heading"><div><p class="eyebrow">Mestre · privado</p><h2 id="monsterSheetTitle">Ficha vinculada ao monstro</h2><p class="hint">Escolha uma ficha deste dispositivo. A cópia vinculada permanece oculta para jogadores.</p></div><button class="button button-quiet" id="closeMonsterSheetDialog" type="button">Fechar</button></div>
+        <input id="monsterSheetTokenId" type="hidden" />
+        <label>Ficha do Mestre<select id="monsterLinkedSheetSelect"></select></label>
+        <section id="monsterLinkedSheetPreview" class="monster-linked-sheet-preview" aria-live="polite"></section>
+        <section id="monsterLinkedSheetQuickEdit" class="monster-linked-sheet-quick-edit" hidden></section>
+        <p class="hint">Para atualizar a cópia depois de editar a ficha original, escolha-a novamente e salve.</p>
+        <div class="dialog-actions"><button class="button button-quiet delete-sheet-button" id="deleteMonsterTokenButton" type="button">Excluir token</button><button class="button button-quiet" id="unlinkMonsterSheetButton" type="button">Desvincular</button><button class="button button-quiet" id="editMonsterLinkedSheetButton" type="button">Editar dados do monstro</button><button class="button button-quiet" id="openMonsterLinkedFullSheetButton" type="button">Abrir ficha completa</button><button class="button button-primary" type="submit">Vincular ficha</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="acquireSkillDialog">
+      <form method="dialog" id="acquireSkillForm">
+        <p class="eyebrow">Nova perícia</p><h2>Adicionar à ficha</h2><p class="hint">Perícias novas começam com 1 ponto de proficiência. A trilha pode fornecer valores iniciais diferentes.</p>
+        <p class="hint skill-acquire-availability" id="skillAcquireAvailability"></p>
+        <label>Perícia<select id="skillAcquireSelect"></select></label>
+        <div class="custom-skill-fields" id="customSkillFields" hidden>
+          <label>Nome da perícia<input id="customSkillName" maxlength="40" /></label>
+          <label>Atributo associado<select id="customSkillAttribute"></select></label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" value="cancel">Cancelar</button><button class="button button-primary" value="default">Adicionar perícia</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="acquireCombatSkillDialog">
+      <form method="dialog" id="acquireCombatSkillForm">
+        <p class="eyebrow">Nova perícia de combate</p><h2>Adicionar à ficha</h2><p class="hint">Começa em +1, ocupa uma vaga do atributo e usa PP para evoluir.</p>
+        <p class="hint skill-acquire-availability" id="combatSkillAcquireAvailability"></p>
+        <label>Perícia<select id="combatSkillAcquireSelect"></select></label>
+        <div class="dialog-actions"><button class="button button-quiet" value="cancel">Cancelar</button><button class="button button-primary" value="default">Adicionar perícia</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="levelUpDialog">
+      <form method="dialog">
+        <p class="eyebrow">Evolução concluída</p>
+        <h2 id="levelUpTitle">Novo nível</h2>
+        <div class="level-gain-summary" id="levelUpSummary"></div>
+        <div class="dialog-actions"><button class="button button-primary" value="default">Continuar</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="inventoryDialog" class="inventory-dialog" aria-labelledby="inventory-title">
+      <section class="inventory-section">
+        <div class="section-heading"><div><p class="eyebrow">Carga e armamento</p><h2 id="inventory-title">Inventário</h2><p class="hint">A defesa do item entra no cálculo apenas quando ele está equipado.</p></div><div class="inventory-dialog-actions"><div class="capacity-inline"><span>Peso <strong id="weightValue">0</strong></span><span>Limite <strong id="capacityValue">—</strong></span></div><button class="button button-quiet" id="closeInventoryButton" type="button">Fechar</button></div></div>
+        <div class="inventory-controls">
+          <label>Adicionar item do catálogo<select id="catalogSelect"></select></label>
+          <button class="button" id="addCatalogItem" type="button">Adicionar</button>
+          <p id="catalogDescription" class="hint"></p>
+          <label class="capacity-input">1d3 da capacidade<input id="capacityRoll" type="number" min="1" max="3" /></label>
+          <button class="button button-quiet" id="rollCapacity" type="button">Rolar 1d3</button>
+        </div>
+        <div class="notice" id="inventoryNotice">Defina a rolagem de 1d3 para acompanhar a capacidade.</div>
+        <div class="table-wrap"><table><thead><tr><th>Item</th><th>Qtd.</th><th>Peso</th><th>Defesa</th><th>Preço</th><th>Equipado</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="inventoryRows"></tbody></table></div>
+        <button class="button button-quiet" id="addInventoryItem" type="button">+ Item personalizado</button>
+      </section>
+    </dialog>
+
+    <dialog id="trailUnlockDialog" class="trail-unlock-dialog" aria-labelledby="trailUnlockTitle">
+      <div class="section-heading"><div><p class="eyebrow">Trilha</p><h2 id="trailUnlockTitle">Liberar trilha privada</h2><p class="hint">Digite o código entregue pelo Mestre. Somente esta ficha receberá acesso à trilha.</p></div><button class="button button-quiet" id="closeTrailUnlockButton" type="button">Fechar</button></div>
+      <label>Código da trilha<input id="trailCodeInput" maxlength="80" autocomplete="off" /></label>
+      <p class="hint" id="trailUnlockFeedback" aria-live="polite"></p>
+      <div class="dialog-actions"><button class="button button-quiet" id="clearTrailButton" type="button" hidden>Remover trilha</button><button class="button button-primary" id="unlockTrailButton" type="button">Liberar trilha</button></div>
+    </dialog>
+
+    <dialog id="trailAdminDialog" class="inventory-dialog" aria-labelledby="trailAdminTitle">
+      <section class="inventory-section">
+        <div class="section-heading"><div><p class="eyebrow">Privado</p><h2 id="trailAdminTitle">Gerenciar trilhas</h2><p class="hint">Os códigos nunca são mostrados depois de salvos.</p></div><button class="button button-quiet" id="closeTrailAdminButton" type="button">Fechar</button></div>
+        <form id="trailAdminLoginForm" class="trail-admin-login"><label>Senha de Mestre<input id="trailAdminPassword" type="password" autocomplete="current-password" required /></label><button class="button button-primary" type="submit">Entrar</button></form>
+        <div id="trailAdminPanel" hidden>
+          <form id="trailForm" class="trail-form"><input id="trailId" type="hidden" /><label>Nome da trilha<input id="trailName" maxlength="60" required /></label><label>Código de acesso<input id="trailAccessCode" maxlength="80" autocomplete="new-password" placeholder="Necessário ao criar; opcional para manter ao editar" /></label><label>Resumo<input id="trailSummary" maxlength="240" placeholder="Ex.: Guerreiro arcano focado em proteção." /></label><label>Regras, poderes e limitações<textarea id="trailDetails" maxlength="2000" rows="5" placeholder="Descreva aqui o que o jogador pode consultar na própria ficha."></textarea></label><div class="dialog-actions"><button class="button button-quiet" id="cancelTrailEditButton" type="button">Limpar</button><button class="button button-primary" type="submit">Salvar trilha</button></div></form>
+          <div class="party-members-heading"><h3>Trilhas cadastradas</h3><button class="text-button" id="refreshTrailsButton" type="button">Atualizar</button></div><div id="trailAdminList" class="party-member-list"></div>
+        </div>
+        <p class="hint" id="trailAdminFeedback" aria-live="polite"></p>
+      </section>
+    </dialog>
+
+    <dialog id="partyDialog" class="party-dialog" aria-labelledby="party-title">
+      <section class="party-content">
+        <div class="section-heading"><div><p class="eyebrow">Mesa online</p><h2 id="party-title">Party</h2><p class="hint" id="partyFeedback">Crie uma party como Mestre ou entre pelo convite recebido.</p></div><button class="button button-quiet" id="closePartyButton" type="button">Fechar</button></div>
+
+        <div id="partyStartPanel" class="party-panel">
+          <div class="party-choice"><div><h3>Sou o Mestre</h3><p>Crie a sala e envie o link de convite aos jogadores.</p></div><label>Nome da party<input id="partyNameInput" maxlength="60" placeholder="Ex.: A Cripta do Rei" /></label><button class="button button-primary" id="createPartyButton" type="button">Criar party</button></div>
+          <div class="party-choice" id="partyInviteChoice" hidden><div><h3>Entrar como jogador</h3><p>Escolha uma das suas fichas. Somente ela será compartilhada com o Mestre.</p></div><label>Sua ficha<select id="joinSheetSelect"></select></label><button class="button button-primary" id="joinPartyButton" type="button">Entrar na party</button></div>
+        </div>
+
+        <div id="partyHostPanel" class="party-panel" hidden>
+          <div class="party-link-row"><label>Link de convite<input id="inviteLinkInput" readonly /></label><button class="button button-primary" id="copyInviteButton" type="button">Copiar convite</button></div>
+          <div class="party-status"><span class="status-dot"></span><span>Mestre conectado. Jogadores entram pelo link acima.</span></div>
+          <div class="party-members-heading"><h3>Personagens na mesa</h3><button class="text-button" id="refreshPartyButton" type="button">Atualizar</button></div>
+          <div id="partyMemberList" class="party-member-list"></div>
+        </div>
+
+        <div id="partyPlayerPanel" class="party-panel" hidden>
+          <div class="party-status"><span class="status-dot"></span><span>Você está na party como jogador.</span></div>
+          <p class="hint" id="partyPlayerSheet">Sua ficha é sincronizada automaticamente com o Mestre enquanto você a edita.</p>
+        </div>
+
+        <button class="text-button party-disconnect" id="disconnectPartyButton" type="button" hidden>Desconectar desta party neste dispositivo</button>
+      </section>
+    </dialog>
+
+    <dialog id="sharedSheetDialog" class="shared-sheet-dialog" aria-labelledby="sharedSheetTitle">
+      <section class="shared-sheet-content"><div class="section-heading"><div><p class="eyebrow">Ficha compartilhada</p><h2 id="sharedSheetTitle">Personagem</h2></div><button class="button button-quiet" id="closeSharedSheetButton" type="button">Fechar</button></div><div id="sharedSheetView"></div></section>
+    </dialog>
+
+    <template id="inventoryRowTemplate"><tr><td><input data-field="name" aria-label="Nome do item" /></td><td><input data-field="quantity" type="number" min="1" aria-label="Quantidade" /></td><td><input data-field="weight" type="number" min="0" step="0.1" aria-label="Peso" /></td><td><input data-field="defense" type="number" aria-label="Defesa" /></td><td><input data-field="price" type="number" min="0" aria-label="Preço" /></td><td class="check-cell"><input data-field="equipped" type="checkbox" aria-label="Equipado" /></td><td><button data-action="remove-item" class="icon-button" type="button" aria-label="Remover item">×</button></td></tr></template>
+    <script src="app.js"></script>
+  </body>
+</html>
